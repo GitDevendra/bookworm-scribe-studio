@@ -4,7 +4,12 @@ import { useEbook } from "@/context/EbookContext";
 import { DocumentElement } from "@/types/editor";
 import EditorToolbar from "./EditorToolbar";
 import EditorArea from "./EditorArea";
-import { createTextElement, getBlockPrefix, parseContent } from "@/utils/textFormatting";
+import { 
+  createTextElement, 
+  parseContent, 
+  applyFormatting as applyTextFormatting,
+  applyBlockFormat as applyBlockFormatting
+} from "@/utils/textFormatting";
 
 const EditorContent = () => {
   const { book, currentChapterId, updateChapterContent } = useEbook();
@@ -57,35 +62,13 @@ const EditorContent = () => {
   };
 
   const applyFormatting = (formatType: 'bold' | 'italic' | 'underline') => {
-    const symbol = {
-      bold: '**',
-      italic: '_',
-      underline: '~'
-    }[formatType];
-
-    const before = content.substring(0, selectionStart);
-    const selection = content.substring(selectionStart, selectionEnd);
-    const after = content.substring(selectionEnd);
-
-    const newContent = `${before}${symbol}${selection}${symbol}${after}`;
+    const newContent = applyTextFormatting(content, selectionStart, selectionEnd, formatType);
     setContent(newContent);
     handleContentChange({ target: { value: newContent } } as React.ChangeEvent<HTMLTextAreaElement>);
   };
 
   const applyBlockFormat = (formatType: DocumentElement['type']) => {
-    const lines = content.split('\n');
-    let currentLine = 0;
-    let currentPos = 0;
-
-    while (currentPos + lines[currentLine].length < selectionStart) {
-      currentPos += lines[currentLine].length + 1;
-      currentLine++;
-    }
-
-    const prefix = getBlockPrefix(formatType);
-    lines[currentLine] = prefix + lines[currentLine].replace(/^(#+ |> |- |\d+\. |---)/, '');
-
-    const newContent = lines.join('\n');
+    const newContent = applyBlockFormatting(content, selectionStart, formatType);
     setContent(newContent);
     handleContentChange({ target: { value: newContent } } as React.ChangeEvent<HTMLTextAreaElement>);
   };
@@ -116,4 +99,3 @@ const EditorContent = () => {
 };
 
 export default EditorContent;
-
