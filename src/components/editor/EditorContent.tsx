@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from "react";
 import { useEbook } from "@/context/EbookContext";
-import { DocumentElement } from "@/types/editor";
+import { DocumentElement, TextElement } from "@/types/editor";
 import { Button } from "@/components/ui/button";
 import { 
   Bold, 
@@ -23,23 +22,28 @@ import {
 const EditorContent = () => {
   const { book, currentChapterId, updateChapterContent } = useEbook();
   const [content, setContent] = useState<string>("");
+  const [selectionStart, setSelectionStart] = useState<number>(0);
+  const [selectionEnd, setSelectionEnd] = useState<number>(0);
 
   // Get the current chapter
   const currentChapter = book?.chapters.find(chapter => chapter.id === currentChapterId);
 
   useEffect(() => {
     if (currentChapter) {
-      // This is a simplified approach. In a real implementation,
-      // we would need a more sophisticated way to convert document elements to HTML
-      // and vice versa when using a WYSIWYG editor
       const contentText = currentChapter.content
         .map(element => {
-          if (element.type === 'image') {
+          if ('src' in element) { // Type guard for ImageElement
             return `[Image: ${element.alt || 'No description'}]`;
           }
           
           if ('children' in element) {
-            return element.children.map(child => child.text).join('');
+            return element.children.map(child => {
+              let text = child.text;
+              if (child.style?.bold) text = `**${text}**`;
+              if (child.style?.italic) text = `_${text}_`;
+              if (child.style?.underline) text = `~${text}~`;
+              return text;
+            }).join('');
           }
           
           return '';
@@ -54,18 +58,60 @@ const EditorContent = () => {
     const newContent = e.target.value;
     setContent(newContent);
     
-    // In a real implementation, we would convert the text to proper document elements
-    // For now, just create a simple paragraph element
+    // Convert text to document elements with formatting
     const paragraphs: DocumentElement[] = newContent.split('\n\n')
       .filter(text => text.trim())
-      .map(text => ({
-        type: 'paragraph',
-        children: [{ text }]
-      }));
+      .map(text => {
+        // Check for markdown-style formatting
+        const hasFormatting = /(\*\*|_|~)/.test(text);
+        
+        if (!hasFormatting) {
+          return {
+            type: 'paragraph',
+            children: [{ text }]
+          } as TextElement;
+        }
+
+        // Handle formatted text
+        return {
+          type: 'paragraph',
+          children: [
+            {
+              text: text.replace(/\*\*|_|~/g, ''),
+              style: {
+                bold: text.includes('**'),
+                italic: text.includes('_'),
+                underline: text.includes('~')
+              }
+            }
+          ]
+        } as TextElement;
+      });
     
     if (currentChapterId) {
       updateChapterContent(currentChapterId, paragraphs);
     }
+  };
+
+  const handleSelectionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setSelectionStart(e.target.selectionStart);
+    setSelectionEnd(e.target.selectionEnd);
+  };
+
+  const applyFormatting = (formatType: 'bold' | 'italic' | 'underline') => {
+    const symbol = {
+      bold: '**',
+      italic: '_',
+      underline: '~'
+    }[formatType];
+
+    const before = content.substring(0, selectionStart);
+    const selection = content.substring(selectionStart, selectionEnd);
+    const after = content.substring(selectionEnd);
+
+    const newContent = `${before}${symbol}${selection}${symbol}${after}`;
+    setContent(newContent);
+    handleContentChange({ target: { value: newContent } } as React.ChangeEvent<HTMLTextAreaElement>);
   };
 
   if (!book || !currentChapter) {
@@ -82,13 +128,28 @@ const EditorContent = () => {
       <div className="bg-white border-b border-gray-200 p-2">
         <div className="flex flex-wrap gap-1">
           {/* Text formatting */}
-          <Button variant="ghost" size="icon" aria-label="Bold">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            aria-label="Bold"
+            onClick={() => applyFormatting('bold')}
+          >
             <Bold className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Italic">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            aria-label="Italic"
+            onClick={() => applyFormatting('italic')}
+          >
             <Italic className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Underline">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            aria-label="Underline"
+            onClick={() => applyFormatting('underline')}
+          >
             <Underline className="h-4 w-4" />
           </Button>
           
@@ -163,10 +224,10 @@ const EditorContent = () => {
             {currentChapter.title}
           </h1>
           
-          {/* Simple textarea for now, will be replaced with a rich editor */}
           <textarea
             value={content}
             onChange={handleContentChange}
+            onSelect={handleSelectionChange}
             className="w-full h-full min-h-[60vh] focus:outline-none resize-none"
             style={{ 
               fontFamily: book.theme.fontFamily,
