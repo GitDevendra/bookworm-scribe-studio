@@ -1,10 +1,10 @@
-
 export type ElementType = 'paragraph' | 'heading-1' | 'heading-2' | 'heading-3' | 'image' | 'list-item' | 'list-numbered' | 'quote' | 'divider';
 
 export interface TextStyle {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
+  align?: 'left' | 'center' | 'right';
   code?: boolean;
   color?: string;
   backgroundColor?: string;
