@@ -67,7 +67,16 @@ const EditorContent = () => {
   const applyFormatting = (formatType: 'bold' | 'italic' | 'underline') => {
     if (!textareaRef.current) return;
     
-    const newContent = applyTextFormatting(content, selectionStart, selectionEnd, formatType);
+    // Get current selection positions before we modify the text
+    const currentStart = textareaRef.current.selectionStart;
+    const currentEnd = textareaRef.current.selectionEnd;
+    
+    // Only proceed if there is a selection
+    if (currentStart === currentEnd) {
+      return;
+    }
+    
+    const newContent = applyTextFormatting(content, currentStart, currentEnd, formatType);
     setContent(newContent);
     handleContentChange({ target: { value: newContent } } as React.ChangeEvent<HTMLTextAreaElement>);
     
@@ -75,6 +84,11 @@ const EditorContent = () => {
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
+        
+        // Try to restore selection approximately
+        // This is a simple approach - might need refinement for complex formatting
+        textareaRef.current.selectionStart = currentStart;
+        textareaRef.current.selectionEnd = currentEnd;
       }
     }, 0);
   };

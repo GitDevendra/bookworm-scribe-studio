@@ -18,7 +18,11 @@ const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect, 
   useEffect(() => {
     // Convert markdown-style formatting to HTML for preview
     let formattedContent = content;
+    
+    // Handle bold formatting
     formattedContent = formattedContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Handle other formatting
     formattedContent = formattedContent.replace(/_(.*?)_/g, '<em>$1</em>');
     formattedContent = formattedContent.replace(/~(.*?)~/g, '<u>$1</u>');
     formattedContent = formattedContent.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
@@ -88,7 +92,7 @@ const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect, 
             onClick={onSelect}
             className="w-full h-full min-h-[40vh] focus:outline-none resize-none border border-gray-200 p-4 rounded"
             style={{ 
-              fontFamily: book.theme.fontFamily,
+              fontFamily: 'monospace', // Use monospace to make markdown editing easier
               fontSize: `${book.theme.fontSize}px`,
               lineHeight: book.theme.lineHeight,
               color: book.theme.textColor,
