@@ -30,6 +30,7 @@ const EditorContent = () => {
     const newContent = e.target.value;
     setContent(newContent);
     
+    // Parse content by paragraphs (separated by double newlines)
     const paragraphs: DocumentElement[] = newContent.split('\n\n')
       .filter(text => text.trim())
       .map(text => {
@@ -56,9 +57,10 @@ const EditorContent = () => {
     }
   };
 
-  const handleSelectionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setSelectionStart(e.target.selectionStart);
-    setSelectionEnd(e.target.selectionEnd);
+  const handleSelectionChange = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
+    const target = e.target as HTMLTextAreaElement;
+    setSelectionStart(target.selectionStart);
+    setSelectionEnd(target.selectionEnd);
   };
 
   const applyFormatting = (formatType: 'bold' | 'italic' | 'underline') => {

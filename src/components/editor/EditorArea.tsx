@@ -1,13 +1,14 @@
 
 import { useState, useEffect } from "react";
 import { Book } from "@/types/editor";
+import { Textarea } from "@/components/ui/textarea";
 
 interface EditorAreaProps {
   book: Book;
   content: string;
   currentChapter: { title: string };
   onContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onSelect: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onSelect: (e: React.SyntheticEvent<HTMLTextAreaElement>) => void;
 }
 
 const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect }: EditorAreaProps) => {
@@ -29,6 +30,7 @@ const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect }
     
     // Replace newlines with line breaks for the preview
     formattedContent = formattedContent.replace(/\n\n/g, '</p><p>');
+    formattedContent = formattedContent.replace(/\n/g, '<br />');
     
     setPreviewContent(formattedContent);
   }, [content]);
@@ -76,17 +78,20 @@ const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect }
           }}
         >
           <h2 className="text-lg font-medium mb-4 text-gray-500">Editor</h2>
-          <textarea
+          <Textarea
             value={content}
             onChange={onContentChange}
-            onSelect={onSelect}
+            onKeyUp={onSelect}
+            onMouseUp={onSelect}
+            onClick={onSelect}
             className="w-full h-full min-h-[40vh] focus:outline-none resize-none border border-gray-200 p-4 rounded"
             style={{ 
               fontFamily: book.theme.fontFamily,
               fontSize: `${book.theme.fontSize}px`,
               lineHeight: book.theme.lineHeight,
               color: book.theme.textColor,
-              backgroundColor: book.theme.backgroundColor
+              backgroundColor: book.theme.backgroundColor,
+              whiteSpace: 'pre-wrap'
             }}
             placeholder="Start writing your book here..."
           />
