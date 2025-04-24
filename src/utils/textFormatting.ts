@@ -1,4 +1,3 @@
-
 import { DocumentElement, TextElement, TextStyle } from "@/types/editor";
 
 export const getBlockPrefix = (type: string): string => {
@@ -79,15 +78,26 @@ export const applyFormatting = (
   const selection = content.substring(selectionStart, selectionEnd);
   const after = content.substring(selectionEnd);
 
-  const regex = formatType === 'bold' ? /\*\*(.*?)\*\*/g : 
-               formatType === 'italic' ? /_(.*?)_/g : /~(.*?)~/g;
+  const isAlreadyFormatted = (
+    formatType === 'bold' && selection.startsWith('**') && selection.endsWith('**') ||
+    formatType === 'italic' && selection.startsWith('_') && selection.endsWith('_') ||
+    formatType === 'underline' && selection.startsWith('~') && selection.endsWith('~')
+  );
   
-  if (selection.match(regex)) {
-    const cleanSelection = selection.replace(regex, '$1');
-    return before + cleanSelection + after;
+  if (isAlreadyFormatted) {
+    const trimmedSelection = selection.slice(symbol.length, -symbol.length);
+    return before + trimmedSelection + after;
   }
   
-  return `${before}${symbol}${selection}${symbol}${after}`;
+  const isWrappedByFormatting = (
+    before.endsWith(symbol) && after.startsWith(symbol)
+  );
+  
+  if (isWrappedByFormatting) {
+    return before.slice(0, -symbol.length) + selection + after.slice(symbol.length);
+  }
+
+  return before + symbol + selection + symbol + after;
 };
 
 export const applyBlockFormat = (

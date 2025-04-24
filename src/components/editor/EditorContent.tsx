@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useEbook } from "@/context/EbookContext";
 import { DocumentElement } from "@/types/editor";
 import EditorToolbar from "./EditorToolbar";
@@ -16,6 +16,7 @@ const EditorContent = () => {
   const [content, setContent] = useState<string>("");
   const [selectionStart, setSelectionStart] = useState<number>(0);
   const [selectionEnd, setSelectionEnd] = useState<number>(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const currentChapter = book?.chapters.find(chapter => chapter.id === currentChapterId);
 
@@ -64,15 +65,33 @@ const EditorContent = () => {
   };
 
   const applyFormatting = (formatType: 'bold' | 'italic' | 'underline') => {
+    if (!textareaRef.current) return;
+    
     const newContent = applyTextFormatting(content, selectionStart, selectionEnd, formatType);
     setContent(newContent);
     handleContentChange({ target: { value: newContent } } as React.ChangeEvent<HTMLTextAreaElement>);
+    
+    // Focus back on the textarea after formatting
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, 0);
   };
 
   const applyBlockFormat = (formatType: DocumentElement['type']) => {
+    if (!textareaRef.current) return;
+    
     const newContent = applyBlockFormatting(content, selectionStart, formatType);
     setContent(newContent);
     handleContentChange({ target: { value: newContent } } as React.ChangeEvent<HTMLTextAreaElement>);
+    
+    // Focus back on the textarea after formatting
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, 0);
   };
 
   if (!book || !currentChapter) {
@@ -95,6 +114,7 @@ const EditorContent = () => {
         currentChapter={currentChapter}
         onContentChange={handleContentChange}
         onSelect={handleSelectionChange}
+        textareaRef={textareaRef}
       />
     </>
   );

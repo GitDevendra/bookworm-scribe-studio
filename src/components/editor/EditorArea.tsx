@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, RefObject } from "react";
 import { Book } from "@/types/editor";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -9,9 +9,10 @@ interface EditorAreaProps {
   currentChapter: { title: string };
   onContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onSelect: (e: React.SyntheticEvent<HTMLTextAreaElement>) => void;
+  textareaRef: RefObject<HTMLTextAreaElement>;
 }
 
-const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect }: EditorAreaProps) => {
+const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect, textareaRef }: EditorAreaProps) => {
   const [previewContent, setPreviewContent] = useState<string>("");
   
   useEffect(() => {
@@ -79,6 +80,7 @@ const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect }
         >
           <h2 className="text-lg font-medium mb-4 text-gray-500">Editor</h2>
           <Textarea
+            ref={textareaRef}
             value={content}
             onChange={onContentChange}
             onKeyUp={onSelect}
