@@ -33,7 +33,7 @@ const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect, 
     formattedContent = formattedContent.replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>');
     formattedContent = formattedContent.replace(/^---$/gm, '<hr />');
     
-    // Replace newlines with line breaks for the preview
+    // Properly handle line breaks for the preview
     formattedContent = formattedContent.replace(/\n\n/g, '</p><p>');
     formattedContent = formattedContent.replace(/\n/g, '<br />');
     
@@ -97,7 +97,7 @@ const EditorArea = ({ book, content, currentChapter, onContentChange, onSelect, 
               lineHeight: book.theme.lineHeight,
               color: book.theme.textColor,
               backgroundColor: book.theme.backgroundColor,
-              whiteSpace: 'pre-wrap'
+              whiteSpace: 'pre-wrap' // This ensures line breaks are preserved
             }}
             placeholder="Start writing your book here..."
           />

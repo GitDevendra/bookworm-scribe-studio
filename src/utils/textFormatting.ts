@@ -1,3 +1,4 @@
+
 import { DocumentElement, TextElement, TextStyle } from "@/types/editor";
 
 export const getBlockPrefix = (type: string): string => {

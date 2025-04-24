@@ -31,30 +31,32 @@ const EditorContent = () => {
     const newContent = e.target.value;
     setContent(newContent);
     
-    // Parse content by paragraphs (separated by double newlines)
-    const paragraphs: DocumentElement[] = newContent.split('\n\n')
-      .filter(text => text.trim())
-      .map(text => {
-        if (text.startsWith('# ')) {
-          return createTextElement('heading-1', text.slice(2));
-        } else if (text.startsWith('## ')) {
-          return createTextElement('heading-2', text.slice(3));
-        } else if (text.startsWith('### ')) {
-          return createTextElement('heading-3', text.slice(4));
-        } else if (text.startsWith('- ')) {
-          return createTextElement('list-item', text.slice(2));
-        } else if (text.match(/^\d+\. /)) {
-          return createTextElement('list-numbered', text.replace(/^\d+\. /, ''));
-        } else if (text.startsWith('> ')) {
-          return createTextElement('quote', text.slice(2));
-        } else if (text.startsWith('---')) {
-          return createTextElement('divider', '');
-        }
-        return createTextElement('paragraph', text);
-      });
+    // Split text by paragraphs (double newlines)
+    const paragraphs = newContent.split('\n\n')
+      .filter(text => text.trim());
+    
+    // Parse each paragraph into the appropriate DocumentElement
+    const documentElements: DocumentElement[] = paragraphs.map(text => {
+      if (text.startsWith('# ')) {
+        return createTextElement('heading-1', text.slice(2));
+      } else if (text.startsWith('## ')) {
+        return createTextElement('heading-2', text.slice(3));
+      } else if (text.startsWith('### ')) {
+        return createTextElement('heading-3', text.slice(4));
+      } else if (text.startsWith('- ')) {
+        return createTextElement('list-item', text.slice(2));
+      } else if (text.match(/^\d+\. /)) {
+        return createTextElement('list-numbered', text.replace(/^\d+\. /, ''));
+      } else if (text.startsWith('> ')) {
+        return createTextElement('quote', text.slice(2));
+      } else if (text.startsWith('---')) {
+        return createTextElement('divider', '');
+      }
+      return createTextElement('paragraph', text);
+    });
     
     if (currentChapterId) {
-      updateChapterContent(currentChapterId, paragraphs);
+      updateChapterContent(currentChapterId, documentElements);
     }
   };
 
@@ -96,7 +98,8 @@ const EditorContent = () => {
   const applyBlockFormat = (formatType: DocumentElement['type']) => {
     if (!textareaRef.current) return;
     
-    const newContent = applyBlockFormatting(content, selectionStart, formatType);
+    const currentStart = textareaRef.current.selectionStart;
+    const newContent = applyBlockFormatting(content, currentStart, formatType);
     setContent(newContent);
     handleContentChange({ target: { value: newContent } } as React.ChangeEvent<HTMLTextAreaElement>);
     
